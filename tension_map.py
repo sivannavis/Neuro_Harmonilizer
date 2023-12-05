@@ -33,7 +33,7 @@ def note2ori(note):
     :return:
     """
     # notes = ['Eb', 'Ab', 'Db', 'Gb', 'B', 'E', 'A', 'D', 'G', 'C', 'F', 'Bb']
-    # notes = ['C', 'G', 'D', 'A', 'E', 'B', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F']
+    notes = ['C', 'G', 'D', 'A', 'E', 'B', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F']
     orients = {}
     orientation = 0
     for n in notes:
@@ -228,7 +228,7 @@ def check_semi(angles):  # TODO
 def get_pairs(connects, target_pair):
     pairs = []
     if len(connects) == 1:
-        if set(connects) & set(target_pair):  # if they have common elements in t uples
+        if set(connects) & set(target_pair):  # if they have common elements in tuples
             pairs.append(tuple({*connects, *target_pair}))
     elif len(connects) > 1:
         for index, connect in enumerate(connects):
@@ -255,7 +255,3 @@ def get_angles(notes):
             if angle(i, j):
                 angles[index].append(angle(i, j))
     return angles
-
-
-if __name__ == '__main__':
-    data = mirdata.initialize('guitarset', data_home='/Users/sivanding/database/guitarset')

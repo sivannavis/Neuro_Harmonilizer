@@ -1,2 +1,6 @@
 numpy~=1.25.2
 mirdata~=0.3.7
+crema~=0.2.0
+librosa>=0.5
+tensorflow=2.4.1
+keras=2.6
