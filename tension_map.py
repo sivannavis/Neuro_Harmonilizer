@@ -4,25 +4,59 @@ JazzNet: https://github.com/tosiron/jazznet
 
 Author: Sivan Ding
 sivan.d@nyu.edu
+
+References:
+    https://github.com/yuma-m/pychord
 """
-import mirdata
 import numpy as np
+import pychord as pc
+from pychord.constants.scales import FLATTED_SCALE
+from pychord.utils import note_to_val
 
 
 def chord2polar(chord_name):
-    # orientation of chord
-    notes = chord2notes(chord_name)
-    orientations = []
-    for n in notes:
-        orientations.append(note2ori(n))
-    orientation = np.mean(orientations)
-    tension = notes2ten(notes)
+    if chord_name=='N' or chord_name == 'X':
+        orientation = 0
+        tension = np.zeros([30])
+        tension[0] = 1
+    else:
+        notes = chord2notes(chord_name)
+        orientations = []
+        for n in notes:
+            orientations.append(note2ori(n))
+        # orientation of chord
+        orientation = np.mean(orientations)
+        # get tension of chord
+        tension = notes2ten(notes)
     return orientation, tension
 
 
-def chord2notes(chord_name):  # TODO
-    notes = []
+def chord2notes(chord_name):
+    """
+    Thanks to pychord we can do this in one line but we need their required format.
+    :param chord_name:
+    :return:
+    """
+    chord_name = chord_name.replace(':', '', 1)
+    if "min" in chord_name:
+        chord_name = chord_name.replace('min', 'm', 1)
+
+    notes = pc.Chord(chord_name).components()
+
+    notes = [sharp2flat(n) for n in notes]
     return notes
+
+
+def sharp2flat(note):
+    """
+    https://github.com/yuma-m/pychord/blob/main/pychord/constants/scales.py
+
+    :param note:
+    :return:
+    """
+
+    value = note_to_val(note)
+    return FLATTED_SCALE[value]
 
 
 def note2ori(note):
@@ -33,6 +67,11 @@ def note2ori(note):
     :return:
     """
     # notes = ['Eb', 'Ab', 'Db', 'Gb', 'B', 'E', 'A', 'D', 'G', 'C', 'F', 'Bb']
+
+    # convert note from sharps to flats
+    if "#" in note:
+        note = sharp2flat(note)
+
     notes = ['C', 'G', 'D', 'A', 'E', 'B', 'Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F']
     orients = {}
     orientation = 0
@@ -55,19 +94,20 @@ def notes2ten(notes):
     angles = get_angles(notes)
     flat_angles = sum(angles, [])
     # calculate how many intervals in circle of 5th
-    int_5 = max(flat_angles) / 30
+    int_5 = int(max(flat_angles) / 30)
     # calculate how many semitones
-    int_min2 = sum([flat_angles == 150])
+    int_min2 = sum([i == 150 for i in flat_angles])
     # calculate how many major 2nd intervals
-    int_maj2 = sum([flat_angles == 60])
+    int_maj2 = sum([i == 60 for i in flat_angles])
     # calculate how many major 3rd
     int_maj3, int_min3 = check_maj3(angles)
     cont_semi = check_semi(angles)
-    tension = get_tension(int_5, int_min2, int_maj2, int_min3, int_maj3, cont_semi)
+    simple = True if n_notes <= 4 else False
+    tension = get_tension(int_5, int_min2, int_maj2, int_min3, int_maj3, cont_semi, simple)
     return tension
 
 
-def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi):
+def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi, simple):
     tension = np.zeros([30])
     if fifth == 1:
         raise NotImplementedError
@@ -81,7 +121,7 @@ def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi):
         elif maj_2 in [2, 3]:
             tension[2] = 1
     # level 3 to 5
-    if fifth == 5 and min_2 == 1:
+    elif fifth == 5 and min_2 == 1:
         if maj_3 or min_3:
             if maj_2 <= 1:
                 tension[3] = 1
@@ -91,7 +131,7 @@ def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi):
                 tension[5] = 1
         else:
             tension[5] = 1
-    if fifth == 6:
+    elif fifth == 6:
         # level 6 to 8
         if min_2 == 0:
             if maj_2 <= 1:
@@ -125,7 +165,7 @@ def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi):
         else:
             raise NotImplementedError
 
-    if fifth in [7, 8, 9, 10, 11]:
+    elif fifth in [7, 8, 9, 10, 11]:
         # level 14 to 16
         if min_2 == 0:
             if fifth == 8:
@@ -179,7 +219,8 @@ def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi):
             else:
                 raise NotImplementedError
     else:
-        raise NotImplementedError
+        print(fifth, min_2, maj_2, min_3, maj_3, cont_semi, simple)
+        tension[0] = 1
 
     return tension
 
@@ -203,7 +244,7 @@ def check_semi(angles):  # TODO
     :param angles:
     :return: a list of how many groups of 1 semitone, 2-4 neighbor semitones.
     """
-    cont_semi = [0, 0, 0, 0] # single, double, triple， quadruple
+    cont_semi = [0, 0, 0, 0]  # single, double, triple， quadruple
 
     # get connected pairs
     connects = []
@@ -212,15 +253,18 @@ def check_semi(angles):  # TODO
             if pair == 150:
                 connects.append((i, j + (i + 1)))
 
-    # calculate connected components
-    doubles = get_pairs(connects[1:], connects[0])
-    triples = get_pairs(doubles[1:], doubles[0])
-    quadruples = get_pairs(triples[1:], triples[0])
-
     cont_semi[0] = len(connects)
-    cont_semi[1] = len(doubles)
-    cont_semi[2] = len(triples)
-    cont_semi[3] = len(quadruples)
+    # calculate connected components
+    if len(connects) >= 2:
+        doubles = get_pairs(connects[1:], connects[0])
+        cont_semi[1] = len(doubles)
+    if len(connects) >= 3:
+        triples = get_pairs(doubles[1:], doubles[0])
+        cont_semi[2] = len(triples)
+    if len(connects) >= 4:
+        quadruples = get_pairs(triples[1:], triples[0])
+        cont_semi[3] = len(quadruples)
+
 
     return cont_semi
 
@@ -240,9 +284,13 @@ def get_pairs(connects, target_pair):
     return pairs
 
 
-def angle(ori1, ori2):
+def angle(n1, n2):
+    ori1 = note2ori(n1)
+    ori2 = note2ori(n2)
     if abs(ori1 - ori2) > 180:
         return 360 - abs(ori1 - ori2)
+    elif ori1 == ori2:
+        return 360
     else:
         return abs(ori1 - ori2)
 
@@ -252,6 +300,5 @@ def get_angles(notes):
     for index, i in enumerate(notes[:-1]):
         angles.append([])
         for j in notes[index + 1:]:
-            if angle(i, j):
-                angles[index].append(angle(i, j))
+            angles[index].append(angle(i, j))
     return angles
