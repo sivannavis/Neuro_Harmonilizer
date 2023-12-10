@@ -11,12 +11,12 @@ References:
 
 """
 
+import pickle
+
 import jams
 import librosa
-import numpy as np
 import pandas as pd
 import sklearn
-import pickle
 
 import crema
 from tension_map import *
@@ -50,8 +50,17 @@ def loader_id(loader, model):
     jam_est = []
 
     for audio, sr, gt_chord in loader:
-        # if 'octave' not in gt_chord:
-        #     continue
+        # let's first get rid of dyads...
+        if gt_chord.split(':')[1] in ['min2', 'maj2', 'min3', 'maj3', 'perf4', 'tritone', 'perf5', 'min6', 'maj6',
+                                      'aug6', 'maj7_2', 'octave']:
+            continue
+
+        if "min7b5" in gt_chord:
+            gt_chord = gt_chord.replace('min7b5','hdim7')
+        if "seventh" in gt_chord:
+            gt_chord = gt_chord.replace('seventh', '7')
+        if 'sixth' in gt_chord:
+            gt_chord = gt_chord.replace('sixth', 'maj6')
         gt_color = chord2polar(gt_chord)
         preds, pred_jam = chord_id(audio, sr, model)
         pred_chord = preds['value'][0]
@@ -136,3 +145,4 @@ if __name__ == '__main__':
     tension_met = color_acc(t_gt, t_est)
 
     print(chord_met.mean(axis=1))
+    print(tension_met)

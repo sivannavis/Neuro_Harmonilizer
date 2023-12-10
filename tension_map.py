@@ -17,8 +17,8 @@ from pychord.utils import note_to_val
 def chord2polar(chord_name):
     if chord_name=='N' or chord_name == 'X':
         orientation = 0
-        tension = np.zeros([30])
-        tension[0] = 1
+        tension = np.zeros([31])
+        tension[30] = 1
     else:
         notes = chord2notes(chord_name)
         orientations = []
@@ -108,11 +108,12 @@ def notes2ten(notes):
 
 
 def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi, simple):
-    tension = np.zeros([30])
-    if fifth == 1:
-        raise NotImplementedError
+    tension = np.zeros([31])
+    if fifth == 1 or fifth == 12:
+        if simple:
+            tension[0] = 1
     # level 0 to 2
-    if fifth in [2, 3, 4] and min_2 == 0:
+    elif fifth in [2, 3, 4] and min_2 == 0:
         if maj_2 <= 1:
             if min_3 or maj_3:
                 tension[0] = 1
@@ -219,8 +220,7 @@ def get_tension(fifth, min_2, maj_2, min_3, maj_3, cont_semi, simple):
             else:
                 raise NotImplementedError
     else:
-        print(fifth, min_2, maj_2, min_3, maj_3, cont_semi, simple)
-        tension[0] = 1
+        raise NotImplementedError
 
     return tension
 
