@@ -57,9 +57,9 @@ if __name__ == '__main__':
     model = crema.models.chord.ChordModel()
 
     # load dataset
-    test_loader = get_loader(database, metadata, split='test')
-    with open("data/test_loader", "wb") as fp:  # Pickling
-        pickle.dump(test_loader, fp)
+    # test_loader = get_loader(database, metadata, split='test')
+    # with open("data/test_loader", "wb") as fp:  # Pickling
+    #     pickle.dump(test_loader, fp)
     with open("data/test_loader", "rb") as fp:  # Unpickling
         test_loader = pickle.load(fp)
 
