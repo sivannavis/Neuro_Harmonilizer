@@ -32,12 +32,7 @@ def loader_id(loader, model):
                                       'aug6', 'maj7_2', 'octave']:
             continue
 
-        if "min7b5" in gt_chord:
-            gt_chord = gt_chord.replace('min7b5', 'hdim7')
-        if "seventh" in gt_chord:
-            gt_chord = gt_chord.replace('seventh', '7')
-        if 'sixth' in gt_chord:
-            gt_chord = gt_chord.replace('sixth', 'maj6')
+        gt_chord = match_chord2jam(gt_chord)
         gt_color = chord2polar(gt_chord)
         preds, pred_jam = chord_id(audio, sr, model)
         pred_chord = preds['value'][0]
@@ -63,9 +58,9 @@ if __name__ == '__main__':
 
     # load dataset
     test_loader = get_loader(database, metadata, split='test')
-    with open("test_loader", "wb") as fp:  # Pickling
+    with open("data/test_loader", "wb") as fp:  # Pickling
         pickle.dump(test_loader, fp)
-    with open("test_loader", "rb") as fp:  # Unpickling
+    with open("data/test_loader", "rb") as fp:  # Unpickling
         test_loader = pickle.load(fp)
 
     # get results

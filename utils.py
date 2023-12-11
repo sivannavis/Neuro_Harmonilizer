@@ -7,10 +7,36 @@ import pandas as pd
 import sklearn
 
 
+def match_chord2jam(gt_chord):
+    if "min7b5" in gt_chord:
+        gt_chord = gt_chord.replace('min7b5', 'hdim7')
+    if "seventh" in gt_chord:
+        gt_chord = gt_chord.replace('seventh', '7')
+    if 'sixth' in gt_chord:
+        gt_chord = gt_chord.replace('sixth', 'maj6')
+
+    return gt_chord
+
+
 def create_jams(input_folder, output_folder):
     for dirpath, dirnames, filenames in os.walk(input_folder):
         for filename in [f for f in filenames if f.endswith(".wav")]:
+
+            parts = filename.split('-')
+            root = parts[0]
+            quality = parts[2]
+            gt_chord = match_chord2jam(root + ':' + quality)
+
+            # ignore all the dyads
+            if quality in ['min2', 'maj2', 'min3', 'maj3', 'perf4', 'tritone', 'perf5', 'min6', 'maj6',
+                           'aug6', 'maj7_2', 'octave']:
+                continue
+
             file_path = os.path.join(dirpath, filename)
+            audio, sr = librosa.load(file_path)
+
+            jam = jam_label(len(audio) / sr, gt_chord)
+            jam.save(f'{output_folder}/{filename.split(".")[0]}.jams')
 
 
 def chord_id(audio, sr, model):
@@ -80,3 +106,6 @@ def color_acc(t_gt, t_est):
 
 if __name__ == '__main__':
     data_path = "/Users/sivanding/database/jazznet/chords"
+    metadata = "/Users/sivanding/database/jazznet/metadata/chords"
+
+    create_jams(data_path, metadata)
