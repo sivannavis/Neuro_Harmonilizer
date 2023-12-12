@@ -63,13 +63,13 @@ def prepare_data(database, meta_data, split):
     return (np.array(features), np.array(oris), np.array(tensions))
 
 
-def train(model, train_data, val_data, epochs=EPOCHS, batch_size=BATCH_SIZE):
+def train(model, train_data, val_data, output_dir, epochs=EPOCHS, batch_size=BATCH_SIZE):
     feat, ori, tension = train_data
     val_ft, val_or, val_ten = val_data
     print(f'#training data: {feat.shape[0]}\n #validation data: {val_ft.shape[0]}\n')
 
     # save model weights every 5 epochs
-    checkpoint_path = "training_2/cp-{epoch:04d}.ckpt"
+    checkpoint_path = output_dir + "/cp-{epoch:04d}.ckpt"
     cp_callback = k.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
         verbose=1,
@@ -85,7 +85,7 @@ def train(model, train_data, val_data, epochs=EPOCHS, batch_size=BATCH_SIZE):
     print(history.history)
 
     # save model
-    model.save('./models/best_model.keras')
+    model.save(output_dir+'/best_model.keras')
     return model
 
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     model = tension_model()
 
     # train and validation
-    train(model, train_data, val_data)
+    train(model, train_data, val_data, './models/train_01')
 
     # testing
     print(f'#test data{test_ft.shape[0]}\n')

@@ -165,6 +165,31 @@ def tension_model():
 
     return model
 
+def fixed_tension_model():
+    trained = get_weights()
+    input = trained.layers[0].input
+    output = trained.layers[9].output
+    classifier = k.Sequential([
+        k.layers.Dense(256, activation='relu', kernel_initializer='he_normal'),
+        k.layers.Dense(128, activation='relu', kernel_initializer='he_normal'),
+    ])(output)
+
+    ori = k.layers.Dense(1, activation='linear')
+    tension = k.layers.Dense(31, activation='softmax')
+
+    ori = k.layers.TimeDistributed(ori)(classifier)
+    tension = k.layers.TimeDistributed(tension)(classifier)
+
+    model = k.models.Model(inputs=input, outputs=[ori, tension])
+
+    for layer in model.layers[1:10]:
+        layer.trainable = False
+
+    model.compile(loss=['mse', 'categorical_crossentropy'],
+                  optimizer='adam',
+                  metrics=['mean_squared_error', "categorical_accuracy"])
+
+    return model
 
 if __name__ == '__main__':
     with open('./src/crema/crema/models/chord/pump.pkl', 'rb') as fd:
