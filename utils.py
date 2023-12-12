@@ -1,10 +1,63 @@
 import os
+import pickle
 
 import jams
 import librosa
-import numpy as np
 import pandas as pd
 import sklearn
+
+from tension_map import *
+
+
+def preprocess_audio(audio_file, jam_file):
+    with open('./src/crema/crema/models/chord/pump.pkl', 'rb') as fd:
+        pump = pickle.load(fd)
+
+    data = pump.transform(audio_file, jam_file)
+    cqt = data['cqt/mag'].squeeze()
+
+    return cqt
+
+
+def prepare_data(database, meta_data, split, filter=None):
+    features = []
+    chords = []
+    oris = []
+    tensions = []
+    meta = pd.read_csv(meta_data)
+
+    for index, row in meta[meta['split'] == split].iterrows():
+        if 'chord' in row['mode']:
+            folder = row['mode'][:-6]
+            file_name = row['name']
+            parts = file_name.split('-')
+            root = parts[0]
+            quality = parts[2]
+            gt_chord = match_chord2jam(root + ':' + quality)
+            file_path = f"{database}/{folder}/{file_name}.wav"
+            jam_path = f'{os.path.dirname(meta_data)}/chords/{file_name.split(".")[0]}.jams'
+
+            # ignore all the dyads
+            if quality in ['min2', 'maj2', 'min3', 'maj3', 'perf4', 'tritone', 'perf5', 'min6', 'maj6',
+                           'aug6', 'maj7_2', 'octave']:
+                continue
+
+            if filter:
+                if quality not in filter:
+                    continue
+
+            # create input CQT features
+            cqt = preprocess_audio(file_path, jam_path)
+            features.append(cqt)
+            nframe = cqt.shape[0]
+
+            # create labels
+            ori, tension = chord2polar(gt_chord)
+            oris.append(np.full((nframe, 1), ori))
+            tensions.append(np.array([tension] * nframe))
+            chords.append(gt_chord)
+
+    return (np.array(features), np.array(oris), np.array(tensions)), chords
 
 
 def match_chord2jam(gt_chord):
