@@ -162,3 +162,7 @@ cython_debug/
 .idea/
 
 .DS_Store
+
+models/train_01/
+
+models/train_02/
