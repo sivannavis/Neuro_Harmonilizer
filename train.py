@@ -1,5 +1,11 @@
 """
 This script prepares data pumps for training and evaluation.
+
+Author: Sivan Ding
+sivan.d@nyu.edu
+
+Reference:
+    https://www.tensorflow.org/tutorials/keras/save_and_load
 """
 import os.path
 
@@ -7,8 +13,8 @@ from model import *
 from tension_map import *
 from utils import *
 
-BATCH_SIZE = 1
-EPOCHS = 1
+BATCH_SIZE = 5
+EPOCHS = 100
 HOP_LENGTH = 4096
 SAMPLE_RATE = 44100
 
@@ -57,12 +63,29 @@ def prepare_data(database, meta_data, split):
     return (np.array(features), np.array(oris), np.array(tensions))
 
 
-def train(model, train_data, val_data):
+def train(model, train_data, val_data, epochs=EPOCHS, batch_size=BATCH_SIZE):
     feat, ori, tension = train_data
     val_ft, val_or, val_ten = val_data
-    history = model.fit(feat, [ori, tension], validation_data=(val_ft, [val_or, val_ten]),
-                        epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=2)
+    print(f'#training data: {feat.shape[0]}\n #validation data: {val_ft.shape[0]}\n')
+
+    # save model weights every 5 epochs
+    checkpoint_path = "training_2/cp-{epoch:04d}.ckpt"
+    cp_callback = k.callbacks.ModelCheckpoint(
+        filepath=checkpoint_path,
+        verbose=1,
+        save_weights_only=True,
+        save_freq=5 * int(np.ceil(feat.shape[0] / batch_size)))
+
+    history = model.fit(feat, [ori, tension],
+                        validation_data=(val_ft, [val_or, val_ten]),
+                        epochs=epochs,
+                        batch_size=batch_size,
+                        callbacks=[cp_callback],
+                        verbose=2)
     print(history.history)
+
+    # save model
+    model.save('./models/best_model.keras')
     return model
 
 
@@ -73,7 +96,7 @@ def root(x):
 if __name__ == '__main__':
     # get datasets
     database = "/Users/sivanding/database/jazznet/chords"
-    metadata = "/Users/sivanding/database/jazznet/metadata/test.csv"
+    metadata = "/Users/sivanding/database/jazznet/metadata/tiny.csv"
     train_data = prepare_data(database, metadata, 'train')
     val_data = prepare_data(database, metadata, 'validation')
     test_ft, test_or, test_ten = prepare_data(database, metadata, 'test')
@@ -85,5 +108,6 @@ if __name__ == '__main__':
     train(model, train_data, val_data)
 
     # testing
+    print(f'#test data{test_ft.shape[0]}\n')
     scores = model.evaluate(test_ft, [test_or, test_ten])
     print(scores)
