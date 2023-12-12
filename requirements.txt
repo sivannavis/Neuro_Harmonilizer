@@ -1,4 +1,4 @@
-numpy~=1.19.2
+numpy~=1.20
 crema~=0.2.0
 librosa>=0.5
 tensorflow==2.4.1
@@ -14,3 +14,4 @@ pandas~=1.4.4
 scikit-learn~=1.1.2
 pumpp~=0.6.0
 pychord~=1.2.1
+matplotlib==3.6.0

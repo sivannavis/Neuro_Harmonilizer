@@ -166,3 +166,5 @@ cython_debug/
 models/train_01/
 
 models/train_02/
+
+data/

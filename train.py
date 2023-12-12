@@ -85,7 +85,12 @@ def train(model, train_data, val_data, output_dir, epochs=EPOCHS, batch_size=BAT
     print(history.history)
 
     # save model
-    model.save(f'.models/best_model_{output_dir}.keras')
+    model.save(f'./models/best_model_{output_dir}.keras')
+
+    # save model history
+    with open(f'./models/history_{output_dir}', 'wb') as file_pi:
+        pickle.dump(history.history, file_pi)
+
     return model
 
 
