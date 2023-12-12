@@ -4,11 +4,11 @@ recognizing harmony qualities from music audio
 Author: Sivan Ding, Vio Chung, Rave Rajan
 
 ## What's a harmonilizer?
-It maps any chord to a polar coordinates $$ \phi, \rho$$, where $$\phi$$ means the color orientation and the $$\rho$$ means the tension class within the total 31 classes.
+It maps any chord to a polar coordinates $\phi$, $\rho$, where $\phi$ means the color orientation and the $\rho$ means the tension class within the total 31 classes.
 
 ## How does it work?
 We modified a chord recognition model to be a tension embedding extractor, then feed it into a MLP to do regression on chord 
-orientation $$\phi$$ and categorical classification on tension $$\rho$$ at the same time with a combination of 
+orientation $\phi$ and categorical classification on tension $\rho$ at the same time with a combination of 
 MSE loss and categorical crossentropy loss.
 
 ## But does it actually work?
