@@ -149,19 +149,19 @@ def tension_model():
         k.layers.Dense(128, activation='relu', kernel_initializer='he_normal'),
     ])(output)
 
-    ori = k.layers.Dense(1, activation='linear')(classifier)
-    tension = k.layers.Dense(31, activation='softmax')(classifier)
+    ori = k.layers.Dense(1, activation='linear')
+    tension = k.layers.Dense(31, activation='softmax')
 
-    # ori = k.layers.TimeDistributed(ori)(classifier)
-    # tension = k.layers.TimeDistributed(tension)(classifier)
+    ori = k.layers.TimeDistributed(ori)(classifier)
+    tension = k.layers.TimeDistributed(tension)(classifier)
 
     model = k.models.Model(inputs=input, outputs=[ori, tension])
 
     plot_model(model, to_file='model.png', show_shapes=True)
 
-    model.compile(loss=['mse', 'sparse_categorical_crossentropy'],
+    model.compile(loss=['mse', 'categorical_crossentropy'],
                   optimizer='adam',
-                  metrics=['mean_squared_error', '"sparse_categorical_accuracy"'])
+                  metrics=['mean_squared_error', "categorical_accuracy"])
 
     return model
 
