@@ -11,6 +11,7 @@ References:
     https://stackoverflow.com/questions/43294367/how-can-i-load-the-weights-only-for-some-layers
     https://keras.io/api/models/model/
     https://stackoverflow.com/questions/41668813/how-to-add-and-remove-new-layers-in-keras-after-loading-weights
+    https://keras.io/guides/training_with_built_in_methods/
 
 """
 
@@ -148,16 +149,19 @@ def tension_model():
         k.layers.Dense(128, activation='relu', kernel_initializer='he_normal'),
     ])(output)
 
-    out1 = k.layers.Dense(1, activation='linear')
-    out2 = k.layers.Dense(32, activation='softmax')
+    ori = k.layers.Dense(1, activation='linear')(classifier)
+    tension = k.layers.Dense(31, activation='softmax')(classifier)
 
-    ori = k.layers.TimeDistributed(out1)(classifier)
-    tension = k.layers.TimeDistributed(out2)(classifier)
+    # ori = k.layers.TimeDistributed(ori)(classifier)
+    # tension = k.layers.TimeDistributed(tension)(classifier)
 
     model = k.models.Model(inputs=input, outputs=[ori, tension])
-    model.compile(loss=['mse', 'sparse_categorical_crossentropy'], optimizer='adam')
 
     plot_model(model, to_file='model.png', show_shapes=True)
+
+    model.compile(loss=['mse', 'sparse_categorical_crossentropy'],
+                  optimizer='adam',
+                  metrics=['mean_squared_error', '"sparse_categorical_accuracy"'])
 
     return model
 
