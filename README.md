@@ -11,6 +11,16 @@ We modified a chord recognition model to be a tension embedding extractor, then 
 orientation $\phi$ and categorical classification on tension $\rho$ at the same time with a combination of 
 MSE loss and categorical crossentropy loss.
 
+### To run the baseline: tension identifier
+1. initialize a chord recognition model from `crema`
+
+### To run our method: neuro-harmonilizer
+1. initialize a fixed or non-fixed tension model
+
+### To run the analysis
+Please follow `./Notebook/analysis.ipynb`
+1. Load triads and tereds using `metric_filter` function
+
 ## But does it actually work?
 Yes, it does! We compared a naive mapping baseline and our modified neural network based method and it shows some advantages.
 The experiments are done using JazzNet, a dataset that contains chords/arpeggio/scales independent piano audio. 
