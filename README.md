@@ -12,7 +12,7 @@ orientation $\phi$ and categorical classification on tension $\rho$ at the same 
 MSE loss and categorical crossentropy loss.
 
 ### To run the baseline: tension identifier
-1. initialize a chord recognition model from `crema`
+1. Initialize a chord recognition model from `crema`
 2. Get chord and tension metrics
 
 ### To run our method: neuro-harmonilizer
