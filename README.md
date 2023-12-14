@@ -13,13 +13,23 @@ MSE loss and categorical crossentropy loss.
 
 ### To run the baseline: tension identifier
 1. initialize a chord recognition model from `crema`
+2. Get chord and tension metrics
 
 ### To run our method: neuro-harmonilizer
-1. initialize a fixed or non-fixed tension model
+Please follow `./Notebook/demo.ipynb`
+1. Initialize a fixed and non-fixed tension model
+2. Train and validate both tension models
+3. Evaluate both tension models
+4. Run the training process diagnostics 
 
 ### To run the analysis
 Please follow `./Notebook/analysis.ipynb`
-1. Load triads and tereds using `metric_filter` function
+1. Create model architecture and load model weights for both fixed and non-fixed tension model
+2. Compare models through spectrograms, forward and backward GRU, and cqt
+3. Show model results of fixed vs. unfixed models
+4. Observe the performance of the neuro-harmonilizer in individual chords using `metric_filter` function
+5. Observe the performance of the neuro-harmonilizer in triads vs. tetrads
+6. Observe the performance of indidvidual tension class
 
 ## But does it actually work?
 Yes, it does! We compared a naive mapping baseline and our modified neural network based method and it shows some advantages.
